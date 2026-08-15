@@ -15,6 +15,8 @@ services:
       WOODPECKER_GITHUB_CLIENT: "${WOODPECKER_GITHUB_CLIENT}"
       WOODPECKER_GITHUB_SECRET: "${WOODPECKER_GITHUB_SECRET}"
       WOODPECKER_AGENT_SECRET: "${WOODPECKER_AGENT_SECRET}"
+      WOODPECKER_ENVIRONMENT: "GIT_CONFIG_COUNT:1,GIT_CONFIG_KEY_0:http.version,GIT_CONFIG_VALUE_0:HTTP/1.1"
+      WOODPECKER_PLUGINS_TRUSTED_CLONE: "docker.io/woodpeckerci/plugin-git:2.9.2,docker.io/woodpeckerci/plugin-git,quay.io/woodpeckerci/plugin-git,127.0.0.1:8082/axlon-git-clone:2.9.2-retry1"
     volumes:
       - /www/docker/woodpecker:/var/lib/woodpecker
     restart: unless-stopped

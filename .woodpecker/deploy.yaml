@@ -7,7 +7,7 @@ labels:
 
 clone:
   - name: git
-    image: woodpeckerci/plugin-git
+    image: 127.0.0.1:8082/axlon-git-clone:2.9.2-retry1
     settings:
       depth: 1
       partial: false

@@ -24,7 +24,7 @@ Activate `zdy-collab/Axlon.Shct`, mark it as trusted, and add the following repo
 - `rabbitmq_user`
 - `rabbitmq_password`
 
-Add `49.233.152.22:8082` under repository registries so Woodpecker can pull the private CI image.
+Add `127.0.0.1:8082` under repository registries so the production agent can pull the private pipeline images from the registry on the same host.
 
 ## Publish the CI image once
 
@@ -34,6 +34,15 @@ From the repository root on a machine authenticated to the private registry:
 docker build -f ci/woodpecker/Dockerfile -t 49.233.152.22:8082/axlon-ci:13.4.6 ci/woodpecker
 docker push 49.233.152.22:8082/axlon-ci:13.4.6
 ```
+
+Publish the retrying clone image to the same registry before enabling the workflow that references it:
+
+```powershell
+docker build -f ci/woodpecker/git-clone/Dockerfile -t 49.233.152.22:8082/axlon-git-clone:2.9.2-retry1 ci/woodpecker/git-clone
+docker push 49.233.152.22:8082/axlon-git-clone:2.9.2-retry1
+```
+
+The workflow pulls it through `127.0.0.1:8082` on the production host. Woodpecker must be recreated from `deploy/woodpecker/docker-compose.yaml` first so this exact image is trusted to receive the repository clone credentials.
 
 After that, every push to `master` runs `.woodpecker/deploy.yaml`. The pipeline validates the solution and then uses `aspire deploy` to build and push application images and update the production Compose deployment.
 
