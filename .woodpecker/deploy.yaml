@@ -1,0 +1,38 @@
+when:
+  - event: push
+    branch: master
+
+labels:
+  deployment: production
+
+steps:
+  - name: build
+    image: 49.233.152.22:8082/axlon-ci:13.4.6
+    commands:
+      - dotnet restore Axlon.Shct.slnx
+      - dotnet build Axlon.Shct.slnx -c Release --no-restore
+
+  - name: deploy
+    image: 49.233.152.22:8082/axlon-ci:13.4.6
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ASPIRE_CONTAINER_RUNTIME: docker
+      REGISTRY_USERNAME:
+        from_secret: registry_username
+      REGISTRY_PASSWORD:
+        from_secret: registry_password
+      Parameters__dashboard_otlp_api_key:
+        from_secret: dashboard_otlp_api_key
+      Parameters__mysql_password:
+        from_secret: mysql_password
+      Parameters__redis_password:
+        from_secret: redis_password
+      Parameters__rabbitmq_user:
+        from_secret: rabbitmq_user
+      Parameters__rabbitmq_password:
+        from_secret: rabbitmq_password
+    commands:
+      - echo "$${REGISTRY_PASSWORD}" | docker login 49.233.152.22:8082 --username "$${REGISTRY_USERNAME}" --password-stdin
+      - aspire deploy --apphost aspire/AspireApp/AspireApp.AppHost/AspireApp.AppHost.csproj --environment Production --non-interactive
+      - docker compose -p axlon-shct --env-file aspire-output/.env.Production -f aspire-output/docker-compose.yaml ps

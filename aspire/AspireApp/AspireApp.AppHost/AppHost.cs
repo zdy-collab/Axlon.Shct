@@ -26,6 +26,8 @@ builder.AddDockerComposeEnvironment("compose")
         .WithEnvironment("DASHBOARD__OTLP__PRIMARYAPIKEY", dashboardOtlpApiKey))
     .ConfigureComposeFile(composeFile =>
     {
+        composeFile.Name = "axlon-shct";
+
         foreach (var (serviceName, settings) in containerNames)
         {
             if (composeFile.Services.TryGetValue(serviceName, out var service))

@@ -12,6 +12,7 @@ bin-release/
 /release/
 **/.env.Production
 **/.env.production
+/deploy/woodpecker/.env
 
 # Other files and folders
 .settings/
