@@ -57,7 +57,7 @@ builder.AddDockerComposeEnvironment("compose")
     });
 
 #pragma warning disable ASPIRECOMPUTE003
-var containerRegistry = builder.AddContainerRegistry("nexus", "49.233.152.22:8082");
+var containerRegistry = builder.AddContainerRegistry("nexus", "127.0.0.1:8082");
 
 #region 用户/密码
 
