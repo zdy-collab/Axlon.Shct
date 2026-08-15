@@ -33,5 +33,9 @@ services:
       WOODPECKER_AGENT_LABELS: "deployment=production"
       WOODPECKER_MAX_WORKFLOWS: "1"
     volumes:
+      - woodpecker-agent-config:/etc/woodpecker
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+
+volumes:
+  woodpecker-agent-config:

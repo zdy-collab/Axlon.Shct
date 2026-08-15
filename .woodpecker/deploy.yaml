@@ -5,6 +5,13 @@ when:
 labels:
   deployment: production
 
+clone:
+  - name: git
+    image: woodpeckerci/plugin-git
+    settings:
+      depth: 1
+      partial: false
+
 steps:
   - name: build
     image: 127.0.0.1:8082/axlon-ci:13.4.6
@@ -33,6 +40,6 @@ steps:
       Parameters__rabbitmq_password:
         from_secret: rabbitmq_password
     commands:
-      - echo "$${REGISTRY_PASSWORD}" | docker login 49.233.152.22:8082 --username "$${REGISTRY_USERNAME}" --password-stdin
+      - echo "$${REGISTRY_PASSWORD}" | docker login 127.0.0.1:8082 --username "$${REGISTRY_USERNAME}" --password-stdin
       - aspire deploy --apphost aspire/AspireApp/AspireApp.AppHost/AspireApp.AppHost.csproj --environment Production --non-interactive
       - docker compose -p axlon-shct --env-file aspire-output/.env.Production -f aspire-output/docker-compose.yaml ps

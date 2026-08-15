@@ -37,6 +37,21 @@ docker push 49.233.152.22:8082/axlon-ci:13.4.6
 
 After that, every push to `master` runs `.woodpecker/deploy.yaml`. The pipeline validates the solution and then uses `aspire deploy` to build and push application images and update the production Compose deployment.
 
+## Replace an older Woodpecker deployment
+
+The server and agent must run the same pinned version. From the repository root on the Woodpecker host, replace the old Compose file instead of continuing to start a previous `next` configuration:
+
+```bash
+cp deploy/woodpecker/docker-compose.yaml /www/docker/woodpecker/docker-compose.yml
+cd /www/docker/woodpecker
+docker compose pull
+docker compose up -d --force-recreate
+docker compose images
+docker compose logs --tail 100 woodpecker-server woodpecker-agent
+```
+
+Both images reported by `docker compose images` must be `v3.17.0`. The agent log must no longer contain `could not persist agent config`, and the Woodpecker administration page must show `production-agent` online with the `deployment=production` label before restarting a pending workflow.
+
 ## First handoff from the old deployment
 
 Before the first CI-owned deployment, stop the old Compose project once from its existing deployment directory:
