@@ -1,0 +1,61 @@
+  ################################ 本地
+
+  ## 登录到私有仓库
+docker login 49.233.152.22:8082 --username aspireuser
+
+
+## 推送到私有仓库
+aspire do push `
+  --apphost aspire/AspireApp/AspireApp.AppHost/AspireApp.AppHost.csproj `
+  --environment Production `
+  --non-interactive
+
+ ## 生成docker-compose
+  aspire do prepare-compose `
+  --apphost aspire/AspireApp/AspireApp.AppHost/AspireApp.AppHost.csproj `
+  --environment Production `
+  --output-path ./aspire-output-pro `
+  --non-interactive
+
+
+  ################################ 生产
+  docker login 127.0.0.1:8082 --username aspireuser
+
+## 拉取镜像
+docker compose \
+  --env-file .env.Production \
+  -f docker-compose.yaml \
+  pull
+
+  ##卸载所有容器 
+docker compose down --remove-orphans
+
+  ##启动所有容器 
+docker compose \
+  --env-file .env.Production \
+  -f docker-compose.yaml \
+  up -d --remove-orphans --wait
+
+  ## 验证可用性
+  docker compose \
+  --env-file .env.Production \
+  -f docker-compose.yaml \
+  ps -a
+
+
+更新单个程序：
+
+##删除容器 
+docker compose down --remove-orphans
+
+docker compose --env-file .env.Production \
+  -f docker-compose.yaml config --quiet
+
+docker compose --env-file .env.Production \
+  -f docker-compose.yaml up -d \
+  --force-recreate \
+  --remove-orphans
+
+
+docker compose pull auth
+docker compose up -d --no-deps auth

@@ -1,0 +1,164 @@
+server {
+    listen 80;
+    server_name _;
+
+    client_max_body_size 2048m;
+    proxy_http_version 1.1;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    location = /gateway-health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    location ~ ^/api/auth(?:/|$) {
+        proxy_pass ${AUTH_HTTP};
+    }
+
+    location ~ ^/api/files(?:/|$) {
+        proxy_pass ${FILES_HTTP};
+    }
+
+    location ~ ^/api/basic(?:/|$) {
+        proxy_pass ${BASIC_HTTP};
+    }
+
+    location ~ ^/api/merchant(?:/|$) {
+        proxy_pass ${MERCHANT_HTTP};
+    }
+
+    location ~ ^/api/order(?:/|$) {
+        proxy_pass ${ORDER_HTTP};
+    }
+
+    location ~ ^/api/(?:Payment|OrderInner)(?:/|$) {
+        proxy_pass ${ORDER_HTTP};
+    }
+
+    location ~ ^/api/(?:QrScene|user-footprints)(?:/|$) {
+        proxy_pass ${BASIC_HTTP};
+    }
+
+    location = /api/swgLogin {
+        rewrite ^ /api/auth/swgLogin break;
+        proxy_pass ${AUTH_HTTP};
+    }
+
+    location = /swagger { return 302 /swagger/; }
+
+    location / {
+        return 404;
+    }
+}
+
+# Each Swagger UI needs its own origin because every service uses the same
+# /swagger and /api/swgLogin paths.
+server {
+    listen 6601;
+    server_name _;
+    client_max_body_size 2048m;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location = /api/swgLogin {
+        rewrite ^ /api/auth/swgLogin break;
+        proxy_pass ${AUTH_HTTP};
+    }
+
+    location ^~ /swagger/ {
+        proxy_pass ${AUTH_HTTP};
+    }
+
+    location ^~ /swagger-ui/ {
+        proxy_pass ${AUTH_HTTP};
+    }
+
+    location ^~ /swagger-theme/ {
+        proxy_pass ${AUTH_HTTP};
+    }
+
+    location / { proxy_pass ${AUTH_HTTP}; }
+}
+
+server {
+    listen 6602;
+    server_name _;
+    client_max_body_size 2048m;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location = /api/swgLogin {
+        proxy_pass ${FILES_HTTP};
+    }
+
+    location = /swagger { return 302 /swagger/; }
+    location ^~ /swagger/ { proxy_pass ${FILES_HTTP}; }
+    location ^~ /swagger-ui/ { proxy_pass ${FILES_HTTP}; }
+    location ^~ /swagger-theme/ { proxy_pass ${FILES_HTTP}; }
+    location / { proxy_pass ${FILES_HTTP}; }
+}
+
+server {
+    listen 6603;
+    server_name _;
+    client_max_body_size 2048m;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location = /api/swgLogin {
+        proxy_pass ${BASIC_HTTP};
+    }
+
+    location = /swagger { return 302 /swagger/; }
+    location ^~ /swagger/ { proxy_pass ${BASIC_HTTP}; }
+    location ^~ /swagger-ui/ { proxy_pass ${BASIC_HTTP}; }
+    location ^~ /swagger-theme/ { proxy_pass ${BASIC_HTTP}; }
+    location / { proxy_pass ${BASIC_HTTP}; }
+}
+
+server {
+    listen 6604;
+    server_name _;
+    client_max_body_size 2048m;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location = /api/swgLogin {
+        proxy_pass ${MERCHANT_HTTP};
+    }
+
+    location = /swagger { return 302 /swagger/; }
+    location ^~ /swagger/ { proxy_pass ${MERCHANT_HTTP}; }
+    location ^~ /swagger-ui/ { proxy_pass ${MERCHANT_HTTP}; }
+    location ^~ /swagger-theme/ { proxy_pass ${MERCHANT_HTTP}; }
+    location / { proxy_pass ${MERCHANT_HTTP}; }
+}
+
+server {
+    listen 6605;
+    server_name _;
+    client_max_body_size 2048m;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+
+    location = /api/swgLogin {
+        proxy_pass ${ORDER_HTTP};
+    }
+
+    location = /swagger { return 302 /swagger/; }
+    location ^~ /swagger/ { proxy_pass ${ORDER_HTTP}; }
+    location ^~ /swagger-ui/ { proxy_pass ${ORDER_HTTP}; }
+    location ^~ /swagger-theme/ { proxy_pass ${ORDER_HTTP}; }
+    location / { proxy_pass ${ORDER_HTTP}; }
+}

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Axlon.Services.Contracts</RootNamespace>
+    <Description>
+      Axlon.Services.Contracts: cross-service shared entities, DTOs, view models.
+      Referenced by Axlon.Services.Auth and Axlon.Services.Basic.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Axlon.Framework.Abstractions" />
+    <PackageReference Include="Axlon.Framework.Authentication" />
+    <PackageReference Include="Axlon.Framework.Data.Abstractions" />
+    <PackageReference Include="SqlSugarCore" />
+    <PackageReference Include="Axlon.Framework.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="BdGeography\abstract\" />
+    <Folder Include="Merchant\Dto\Inner\" />
+    <Folder Include="Product\Enums\" />
+    <Folder Include="User\Dto\" />
+    <Folder Include="User\Enums\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,38 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Keep all AppHost integration packages on the same exact release. -->
+    <PackageVersion Include="Aspire.Hosting.Docker" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.MySql" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.4.6" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.4.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="Axlon.Framework.Abstractions" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Authentication" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Core" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Data" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Redis" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Data.Abstractions" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Serilog" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.Web" Version="2.0.16" />
+    <PackageVersion Include="Axlon.Framework.EventBus" Version="2.0.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="CoordinateSharp" Version="3.4.1.1" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
+    <PackageVersion Include="NGeoHash" Version="1.2.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.17.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.17.0" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+    <PackageVersion Include="SqlSugarCore" Version="5.1.4.216" />
+    <PackageVersion Include="AlibabaCloud.OSS.V2" Version="0.2.0" />
+  </ItemGroup>
+</Project>

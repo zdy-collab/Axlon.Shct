@@ -1,0 +1,30 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.4.6">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Aspire's orchestration package uses $(OS) to select dcp.exe. Some
+         restricted launch environments omit the process-level OS variable. -->
+    <OS Condition="'$(OS)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">Windows_NT</OS>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>ff28f8ef-815b-4bd9-8413-610deaf61b27</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Docker" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+    <PackageReference Include="Aspire.Hosting.MySql" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\services\Axlon.Services.Auth\Axlon.Services.Auth.csproj" />
+    <ProjectReference Include="..\..\..\services\Axlon.Services.Basic\Axlon.Services.Basic.csproj" />
+    <ProjectReference Include="..\..\..\services\Axlon.Services.DataMigration\Axlon.Services.DataMigration.csproj" />
+    <ProjectReference Include="..\..\..\services\Axlon.Services.Files\Axlon.Services.Files.csproj" />
+    <ProjectReference Include="..\..\..\services\Axlon.Services.Merchant\Axlon.Services.Merchant.csproj" />
+    <ProjectReference Include="..\..\..\services\Axlon.Services.Order\Axlon.Services.Order.csproj" />
+  </ItemGroup>
+
+</Project>

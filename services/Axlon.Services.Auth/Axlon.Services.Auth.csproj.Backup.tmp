@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RootNamespace>Axlon.Services.Auth</RootNamespace>
+    <Description>
+      Axlon.Services.Auth: authentication microservice (login, JWT issue, token refresh).
+      Extracted from Axlon.Framework.SampleApi and re-hosted as an Aspire-orchestrated service.
+    </Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <Compile Remove="Log\**" />
+    <Content Remove="Logs\**" />
+    <Content Remove="Log\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="Log\**" />
+    <None Remove="Logs\**" />
+    <None Remove="Log\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Axlon.Framework.Web" Version="1.0.4" />
+    <PackageReference Include="Axlon.Framework.Authentication" Version="1.0.1" />
+    <PackageReference Include="Axlon.Framework.Serilog.Es" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Axlon.Services.Contracts\Axlon.Services.Contracts.csproj" />
+    <ProjectReference Include="..\Axlon.Services.ServiceDefaults\Axlon.Services.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\logo\" />
+  </ItemGroup>
+
+</Project>

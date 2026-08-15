@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Axlon.Services.Files</RootNamespace>
+    <Description>Authenticated image and video metadata, upload and download service.</Description>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Axlon.Framework.Authentication" />
+    <PackageReference Include="Axlon.Framework.Data" />
+    <PackageReference Include="Axlon.Framework.Serilog" />
+    <PackageReference Include="Axlon.Framework.Web" />
+    <PackageReference Include="AlibabaCloud.OSS.V2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\aspire\AspireApp\AspireApp.ServiceDefaults\AspireApp.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Axlon.Services.Contracts\Axlon.Services.Contracts.csproj" />
+  </ItemGroup>
+</Project>

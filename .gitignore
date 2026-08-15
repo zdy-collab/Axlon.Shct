@@ -1,0 +1,30 @@
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+
+# Runtime log directories (Serilog / AOP SQL / access logs)
+[Ll]og/
+[Ll]ogs/
+
+# Deployment artifacts and environment-specific secrets
+/release/
+**/.env.Production
+**/.env.production
+
+# Other files and folders
+.settings/
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
+
+# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
+# should NOT be excluded as they contain compiler settings and other important
+# information for Eclipse / Flash Builder.
+/.vs/Axlon.Shct.slnx
+/.vs/ProjectEvaluation
+.vs/

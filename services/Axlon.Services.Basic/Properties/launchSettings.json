@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Axlon.Services.Basic": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      //"applicationUrl": "https://localhost:6011;http://localhost:6110"
+      "applicationUrl": "http://0.0.0.0:6100"
+
+    }
+  }
+}

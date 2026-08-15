@@ -1,0 +1,395 @@
+services:
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    container_name: "${DASHBOARD_CONTAINER_NAME:-axlon-dashboard}"
+    environment:
+      DASHBOARD__OTLP__AUTHMODE: "ApiKey"
+      DASHBOARD__OTLP__PRIMARYAPIKEY: "${DASHBOARD_OTLP_API_KEY}"
+    ports:
+      - "6609:18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  mysql:
+    image: "docker.io/library/mysql:8.0"
+    container_name: "${MYSQL_CONTAINER_NAME:-axlon-mysql}"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+    ports:
+      - "5241:3306"
+    volumes:
+      - type: "volume"
+        target: "/var/lib/mysql"
+        source: "aspireapp.apphost-74f5f39005-mysql-data"
+        read_only: false
+    networks:
+      - "aspire"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"
+      interval: "5s"
+      timeout: "3s"
+      retries: 20
+      start_period: "10s"
+  redis:
+    image: "docker.io/library/redis:8.6"
+    container_name: "${REDIS_CONTAINER_NAME:-axlon-redis}"
+    command:
+      - "-c"
+      - "redis-server --requirepass $$REDIS_PASSWORD --save 60 1"
+    entrypoint:
+      - "/bin/sh"
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+    expose:
+      - "6379"
+    volumes:
+      - type: "volume"
+        target: "/data"
+        source: "redis-aicopilot"
+        read_only: false
+    networks:
+      - "aspire"
+  rabbitmq:
+    image: "docker.io/library/rabbitmq:4.3-management"
+    container_name: "${RABBITMQ_CONTAINER_NAME:-axlon-rabbitmq}"
+    environment:
+      RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+      RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASSWORD}"
+    expose:
+      - "5672"
+      - "15672"
+    volumes:
+      - type: "volume"
+        target: "/var/lib/rabbitmq"
+        source: "aspireapp.apphost-74f5f39005-rabbitmq-data"
+        read_only: false
+    networks:
+      - "aspire"
+  data-migration:
+    image: "${DATA_MIGRATION_IMAGE}"
+    container_name: "${DATA_MIGRATION_CONTAINER_NAME:-axlon-data-migration}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${DATA_MIGRATION_PORT}"
+      ConnectionStrings__axlondb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AXLONDB_HOST: "mysql"
+      AXLONDB_PORT: "3306"
+      AXLONDB_USERNAME: "root"
+      AXLONDB_PASSWORD: "${MYSQL_PASSWORD}"
+      AXLONDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/axlondb"
+      AXLONDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/axlondb"
+      AXLONDB_DATABASENAME: "axlondb"
+      ConnectionStrings__filesdb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=filesdb"
+      FILESDB_HOST: "mysql"
+      FILESDB_PORT: "3306"
+      FILESDB_USERNAME: "root"
+      FILESDB_PASSWORD: "${MYSQL_PASSWORD}"
+      FILESDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/filesdb"
+      FILESDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/filesdb"
+      FILESDB_DATABASENAME: "filesdb"
+      DBS__0__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      DBS__1__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=filesdb"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-otlp-api-key=${DASHBOARD_OTLP_API_KEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "data-migration"
+    expose:
+      - "${DATA_MIGRATION_PORT}"
+    depends_on:
+      mysql:
+        condition: "service_healthy"
+    networks:
+      - "aspire"
+  auth:
+    image: "${AUTH_IMAGE}"
+    container_name: "${AUTH_CONTAINER_NAME:-axlon-auth}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${AUTH_PORT}"
+      ConnectionStrings__axlondb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AXLONDB_HOST: "mysql"
+      AXLONDB_PORT: "3306"
+      AXLONDB_USERNAME: "root"
+      AXLONDB_PASSWORD: "${MYSQL_PASSWORD}"
+      AXLONDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/axlondb"
+      AXLONDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/axlondb"
+      AXLONDB_DATABASENAME: "axlondb"
+      DBS__0__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      ConnectionStrings__redis: "redis:6379,password=${REDIS_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_URI: "redis://:${REDIS_PASSWORD}@redis:6379"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-otlp-api-key=${DASHBOARD_OTLP_API_KEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "auth"
+    expose:
+      - "${AUTH_PORT}"
+    depends_on:
+      mysql:
+        condition: "service_started"
+      redis:
+        condition: "service_started"
+      data-migration:
+        condition: "service_completed_successfully"
+    networks:
+      - "aspire"
+  files:
+    image: "${FILES_IMAGE}"
+    container_name: "${FILES_CONTAINER_NAME:-axlon-files}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${FILES_PORT}"
+      ConnectionStrings__filesdb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=filesdb"
+      FILESDB_HOST: "mysql"
+      FILESDB_PORT: "3306"
+      FILESDB_USERNAME: "root"
+      FILESDB_PASSWORD: "${MYSQL_PASSWORD}"
+      FILESDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/filesdb"
+      FILESDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/filesdb"
+      FILESDB_DATABASENAME: "filesdb"
+      DBS__0__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=filesdb"
+      AUTH_HTTP: "http://auth:${AUTH_PORT}"
+      services__auth__http__0: "http://auth:${AUTH_PORT}"
+      AUTH_HTTPS: "https://auth:${AUTH_PORT}"
+      ConnectionStrings__redis: "redis:6379,password=${REDIS_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_URI: "redis://:${REDIS_PASSWORD}@redis:6379"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-otlp-api-key=${DASHBOARD_OTLP_API_KEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "files"
+    expose:
+      - "${FILES_PORT}"
+    volumes:
+      - type: "bind"
+        target: "/app/wwwroot/files"
+        source: "${FILES_STORAGE_ROOT}/objects"
+        read_only: false
+      - type: "bind"
+        target: "/app/wwwroot/.uploads"
+        source: "${FILES_STORAGE_ROOT}/uploads"
+        read_only: false
+    depends_on:
+      mysql:
+        condition: "service_started"
+      auth:
+        condition: "service_started"
+      redis:
+        condition: "service_started"
+      data-migration:
+        condition: "service_completed_successfully"
+    networks:
+      - "aspire"
+  basic:
+    image: "${BASIC_IMAGE}"
+    container_name: "${BASIC_CONTAINER_NAME:-axlon-basic}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${BASIC_PORT}"
+      ConnectionStrings__axlondb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AXLONDB_HOST: "mysql"
+      AXLONDB_PORT: "3306"
+      AXLONDB_USERNAME: "root"
+      AXLONDB_PASSWORD: "${MYSQL_PASSWORD}"
+      AXLONDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/axlondb"
+      AXLONDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/axlondb"
+      AXLONDB_DATABASENAME: "axlondb"
+      DBS__0__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      ConnectionStrings__redis: "redis:6379,password=${REDIS_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_URI: "redis://:${REDIS_PASSWORD}@redis:6379"
+      ConnectionStrings__rabbitmq: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USERNAME: "${RABBITMQ_USER}"
+      RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
+      RABBITMQ_URI: "amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672"
+      AUTH_HTTP: "http://auth:${AUTH_PORT}"
+      services__auth__http__0: "http://auth:${AUTH_PORT}"
+      AUTH_HTTPS: "https://auth:${AUTH_PORT}"
+      FILES_HTTP: "http://files:${FILES_PORT}"
+      services__files__http__0: "http://files:${FILES_PORT}"
+      FILES_HTTPS: "https://files:${FILES_PORT}"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-otlp-api-key=${DASHBOARD_OTLP_API_KEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "basic"
+    expose:
+      - "${BASIC_PORT}"
+    depends_on:
+      mysql:
+        condition: "service_started"
+      redis:
+        condition: "service_started"
+      rabbitmq:
+        condition: "service_started"
+      auth:
+        condition: "service_started"
+      files:
+        condition: "service_started"
+      data-migration:
+        condition: "service_completed_successfully"
+    networks:
+      - "aspire"
+  merchant:
+    image: "${MERCHANT_IMAGE}"
+    container_name: "${MERCHANT_CONTAINER_NAME:-axlon-merchant}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${MERCHANT_PORT}"
+      ConnectionStrings__redis: "redis:6379,password=${REDIS_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_URI: "redis://:${REDIS_PASSWORD}@redis:6379"
+      ConnectionStrings__axlondb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AXLONDB_HOST: "mysql"
+      AXLONDB_PORT: "3306"
+      AXLONDB_USERNAME: "root"
+      AXLONDB_PASSWORD: "${MYSQL_PASSWORD}"
+      AXLONDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/axlondb"
+      AXLONDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/axlondb"
+      AXLONDB_DATABASENAME: "axlondb"
+      DBS__0__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AUTH_HTTP: "http://auth:${AUTH_PORT}"
+      services__auth__http__0: "http://auth:${AUTH_PORT}"
+      AUTH_HTTPS: "https://auth:${AUTH_PORT}"
+      BASIC_HTTP: "http://basic:${BASIC_PORT}"
+      services__basic__http__0: "http://basic:${BASIC_PORT}"
+      BASIC_HTTPS: "https://basic:${BASIC_PORT}"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-otlp-api-key=${DASHBOARD_OTLP_API_KEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "merchant"
+    expose:
+      - "${MERCHANT_PORT}"
+    depends_on:
+      redis:
+        condition: "service_started"
+      mysql:
+        condition: "service_started"
+      auth:
+        condition: "service_started"
+      basic:
+        condition: "service_started"
+      data-migration:
+        condition: "service_completed_successfully"
+    networks:
+      - "aspire"
+  order:
+    image: "${ORDER_IMAGE}"
+    container_name: "${ORDER_CONTAINER_NAME:-axlon-order}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${ORDER_PORT}"
+      ConnectionStrings__redis: "redis:6379,password=${REDIS_PASSWORD}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
+      REDIS_URI: "redis://:${REDIS_PASSWORD}@redis:6379"
+      ConnectionStrings__axlondb: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AXLONDB_HOST: "mysql"
+      AXLONDB_PORT: "3306"
+      AXLONDB_USERNAME: "root"
+      AXLONDB_PASSWORD: "${MYSQL_PASSWORD}"
+      AXLONDB_URI: "mysql://root:${MYSQL_PASSWORD}@mysql:3306/axlondb"
+      AXLONDB_JDBCCONNECTIONSTRING: "jdbc:mysql://mysql:3306/axlondb"
+      AXLONDB_DATABASENAME: "axlondb"
+      DBS__0__Connection: "Server=mysql;Port=3306;User ID=root;Password=${MYSQL_PASSWORD};Database=axlondb"
+      AUTH_HTTP: "http://auth:${AUTH_PORT}"
+      services__auth__http__0: "http://auth:${AUTH_PORT}"
+      AUTH_HTTPS: "https://auth:${AUTH_PORT}"
+      BASIC_HTTP: "http://basic:${BASIC_PORT}"
+      services__basic__http__0: "http://basic:${BASIC_PORT}"
+      BASIC_HTTPS: "https://basic:${BASIC_PORT}"
+      MERCHANT_HTTP: "http://merchant:${MERCHANT_PORT}"
+      services__merchant__http__0: "http://merchant:${MERCHANT_PORT}"
+      MERCHANT_HTTPS: "https://merchant:${MERCHANT_PORT}"
+      OTEL_EXPORTER_OTLP_HEADERS: "x-otlp-api-key=${DASHBOARD_OTLP_API_KEY}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "order"
+    expose:
+      - "${ORDER_PORT}"
+    depends_on:
+      redis:
+        condition: "service_started"
+      mysql:
+        condition: "service_started"
+      auth:
+        condition: "service_started"
+      basic:
+        condition: "service_started"
+      merchant:
+        condition: "service_started"
+      data-migration:
+        condition: "service_completed_successfully"
+    networks:
+      - "aspire"
+  gateway:
+    image: "${GATEWAY_IMAGE}"
+    container_name: "${GATEWAY_CONTAINER_NAME:-axlon-gateway}"
+    environment:
+      AUTH_HTTP: "http://auth:${AUTH_PORT}"
+      services__auth__http__0: "http://auth:${AUTH_PORT}"
+      AUTH_HTTPS: "https://auth:${AUTH_PORT}"
+      FILES_HTTP: "http://files:${FILES_PORT}"
+      services__files__http__0: "http://files:${FILES_PORT}"
+      FILES_HTTPS: "https://files:${FILES_PORT}"
+      BASIC_HTTP: "http://basic:${BASIC_PORT}"
+      services__basic__http__0: "http://basic:${BASIC_PORT}"
+      BASIC_HTTPS: "https://basic:${BASIC_PORT}"
+      MERCHANT_HTTP: "http://merchant:${MERCHANT_PORT}"
+      services__merchant__http__0: "http://merchant:${MERCHANT_PORT}"
+      MERCHANT_HTTPS: "https://merchant:${MERCHANT_PORT}"
+      ORDER_HTTP: "http://order:${ORDER_PORT}"
+      services__order__http__0: "http://order:${ORDER_PORT}"
+      ORDER_HTTPS: "https://order:${ORDER_PORT}"
+    ports:
+      - "6600:80"
+      - "6601:6601"
+      - "6602:6602"
+      - "6603:6603"
+      - "6604:6604"
+      - "6605:6605"
+    depends_on:
+      auth:
+        condition: "service_started"
+      files:
+        condition: "service_started"
+      basic:
+        condition: "service_started"
+      merchant:
+        condition: "service_started"
+      order:
+        condition: "service_started"
+    networks:
+      - "aspire"
+    restart: "always"
+networks:
+  aspire:
+    driver: "bridge"
+volumes:
+  aspireapp.apphost-74f5f39005-mysql-data:
+    driver: "local"
+  redis-aicopilot:
+    driver: "local"
+  aspireapp.apphost-74f5f39005-rabbitmq-data:
+    driver: "local"

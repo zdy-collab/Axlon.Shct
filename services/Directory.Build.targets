@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="CreateLogsDirectory" AfterTargets="Publish" Condition="'$(OutputType)' == 'Exe'">
+    <MakeDir Directories="$(PublishDir)Logs" />
+  </Target>
+</Project>

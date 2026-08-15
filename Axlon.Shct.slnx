@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/aspire/">
+    <Project Path="aspire/AspireApp/AspireApp.AppHost/AspireApp.AppHost.csproj" />
+    <Project Path="aspire/AspireApp/AspireApp.ServiceDefaults/AspireApp.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/services/">
+    <Project Path="services/Axlon.Services.Auth/Axlon.Services.Auth.csproj" />
+    <Project Path="services/Axlon.Services.Basic/Axlon.Services.Basic.csproj" />
+    <Project Path="services/Axlon.Services.Contracts/Axlon.Services.Contracts.csproj" />
+    <Project Path="services/Axlon.Services.DataMigration/Axlon.Services.DataMigration.csproj" />
+    <Project Path="services/Axlon.Services.Files/Axlon.Services.Files.csproj" />
+    <Project Path="services/Axlon.Services.Merchant/Axlon.Services.Merchant.csproj" />
+    <Project Path="services/Axlon.Services.Order/Axlon.Services.Order.csproj" />
+  </Folder>
+</Solution>

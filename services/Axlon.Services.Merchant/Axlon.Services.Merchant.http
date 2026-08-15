@@ -1,0 +1,6 @@
+@Axlon.Services.Merchant_HostAddress = http://localhost:5166
+
+GET {{Axlon.Services.Merchant_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
