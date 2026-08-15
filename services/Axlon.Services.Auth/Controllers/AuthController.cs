@@ -11,6 +11,9 @@ using Microsoft.Extensions.Options;
 
 namespace Axlon.Services.Auth.Controllers;
 
+/// <summary>
+/// 登录管理
+/// </summary>
 [Produces("application/json")]
 [Route("api/auth")]
 [Authorize]
