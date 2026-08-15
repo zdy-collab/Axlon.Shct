@@ -133,11 +133,6 @@ services:
       OTEL_SERVICE_NAME: "auth"
     expose:
       - "${AUTH_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/app"
-        source: "${SERVICES_ROOT:-/opt/axlon/services}/auth"
-        read_only: false
     depends_on:
       mysql:
         condition: "service_started"
@@ -178,10 +173,6 @@ services:
     expose:
       - "${FILES_PORT}"
     volumes:
-      - type: "bind"
-        target: "/app"
-        source: "${SERVICES_ROOT:-/opt/axlon/services}/files"
-        read_only: false
       - type: "bind"
         target: "/app/wwwroot/files"
         source: "${FILES_STORAGE_ROOT}/objects"
@@ -240,11 +231,6 @@ services:
       OTEL_SERVICE_NAME: "basic"
     expose:
       - "${BASIC_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/app"
-        source: "${SERVICES_ROOT:-/opt/axlon/services}/basic"
-        read_only: false
     depends_on:
       mysql:
         condition: "service_started"
@@ -293,11 +279,6 @@ services:
       OTEL_SERVICE_NAME: "merchant"
     expose:
       - "${MERCHANT_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/app"
-        source: "${SERVICES_ROOT:-/opt/axlon/services}/merchant"
-        read_only: false
     depends_on:
       redis:
         condition: "service_started"
@@ -347,11 +328,6 @@ services:
       OTEL_SERVICE_NAME: "order"
     expose:
       - "${ORDER_PORT}"
-    volumes:
-      - type: "bind"
-        target: "/app"
-        source: "${SERVICES_ROOT:-/opt/axlon/services}/order"
-        read_only: false
     depends_on:
       redis:
         condition: "service_started"

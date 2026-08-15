@@ -7,13 +7,13 @@ labels:
 
 steps:
   - name: build
-    image: 49.233.152.22:8082/axlon-ci:13.4.6
+    image: 127.0.0.1:8082/axlon-ci:13.4.6
     commands:
       - dotnet restore Axlon.Shct.slnx
       - dotnet build Axlon.Shct.slnx -c Release --no-restore
 
   - name: deploy
-    image: 49.233.152.22:8082/axlon-ci:13.4.6
+    image: 127.0.0.1:8082/axlon-ci:13.4.6
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
